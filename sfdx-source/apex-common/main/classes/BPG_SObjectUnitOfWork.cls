@@ -51,8 +51,8 @@
  * TODO: Need to add some more test methods for more complex use cases and some unexpected (e.g. registerDirty and then registerDeleted)
  *
  **/
-public virtual class fflib_SObjectUnitOfWork
-    implements fflib_ISObjectUnitOfWork
+public virtual class BPG_SObjectUnitOfWork
+    implements BPG_ISObjectUnitOfWork
 {
     protected List<Schema.SObjectType> m_sObjectTypes = new List<Schema.SObjectType>();
 
@@ -126,12 +126,12 @@ public virtual class fflib_SObjectUnitOfWork
      *
      * @param sObjectTypes A list of objects given in dependency order (least dependent first)
      */
-    public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes)
+    public BPG_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes)
     {
         this(sObjectTypes,new SimpleDML());
     }
 
-    public fflib_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes, IDML dml)
+    public BPG_SObjectUnitOfWork(List<Schema.SObjectType> sObjectTypes, IDML dml)
     {
         m_sObjectTypes = sObjectTypes.clone();
 

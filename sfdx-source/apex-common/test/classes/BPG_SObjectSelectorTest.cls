@@ -25,12 +25,12 @@
 **/
 
 @IsTest
-private with sharing class fflib_SObjectSelectorTest 
+private with sharing class BPG_SObjectSelectorTest 
 {
 	
 	static testMethod void testGetSObjectName()
 	{
-		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
+		TestBPG_SObjectSelector selector = new TestBPG_SObjectSelector();
 		system.assertEquals(null, selector.getSObjectFieldSetList());
 		system.assertEquals('Account',selector.getSObjectName());
 	}
@@ -47,7 +47,7 @@ private with sharing class fflib_SObjectSelectorTest
 			idSet.add(item.Id);
 			
 		Test.startTest();		
-		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
+		TestBPG_SObjectSelector selector = new TestBPG_SObjectSelector();
 		List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);		
 		Test.stopTest();
 		
@@ -72,7 +72,7 @@ private with sharing class fflib_SObjectSelectorTest
 			idSet.add(item.Id);
 			
 		Test.startTest();		
-		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
+		TestBPG_SObjectSelector selector = new TestBPG_SObjectSelector();
 		Database.QueryLocator result = selector.queryLocatorById(idSet);		
 		System.Iterator<SObject> iteratorResult = result.iterator();
 		Test.stopTest();		
@@ -106,13 +106,13 @@ private with sharing class fflib_SObjectSelectorTest
 			return; // Abort the test if unable to create a user with low enough acess
 		System.runAs(testUser)
 		{					
-			Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
+			TestBPG_SObjectSelector selector = new TestBPG_SObjectSelector();
 			try
 			{
 				List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);
 				System.assert(false,'Expected exception was not thrown');
 			}
-			catch(fflib_SObjectDomain.DomainException e)
+			catch(BPG_SObjectDomain.DomainException e)
 			{
 				System.assertEquals('Permission to access an Account denied.',e.getMessage());
 			}
@@ -135,12 +135,12 @@ private with sharing class fflib_SObjectSelectorTest
 			return; // Abort the test if unable to create a user with low enough acess
 		System.runAs(testUser)
 		{					
-			Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector(false, false, false, true);
+			TestBPG_SObjectSelector selector = new TestBPG_SObjectSelector(false, false, false, true);
 			try
 			{
 				List<Account> result = (List<Account>) selector.selectSObjectsById(idSet);
 			}
-			catch(fflib_SObjectDomain.DomainException e)
+			catch(BPG_SObjectDomain.DomainException e)
 			{
 				System.assert(false,'Did not expect an exception to be thrown');
 			}
@@ -149,7 +149,7 @@ private with sharing class fflib_SObjectSelectorTest
 	
 	static testMethod void testSOQL()
 	{
-		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
+		TestBPG_SObjectSelector selector = new TestBPG_SObjectSelector();
 		String soql = selector.newQueryFactory().toSOQL();
 		Pattern p = Pattern.compile('SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS LAST ');
 		Matcher m = p.matcher(soql);
@@ -161,7 +161,7 @@ private with sharing class fflib_SObjectSelectorTest
 	
 	static testMethod void testDefaultConfig()
 	{
-		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
+		TestBPG_SObjectSelector selector = new TestBPG_SObjectSelector();
 		System.assertEquals(false, selector.isEnforcingFLS());
 		System.assertEquals(true, selector.isEnforcingCRUD());
 		System.assertEquals(false, selector.isIncludeFieldSetFields());
@@ -195,8 +195,8 @@ private with sharing class fflib_SObjectSelectorTest
 	static void testWithoutSorting()
 	{
 		//Given
-		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector(false, false, false, false);
-		fflib_QueryFactory qf = selector.newQueryFactory();
+		TestBPG_SObjectSelector selector = new TestBPG_SObjectSelector(false, false, false, false);
+		BPG_QueryFactory qf = selector.newQueryFactory();
 		
 		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'AccountNumber', 'AnnualRevenue' };
 		if (UserInfo.isMultiCurrencyOrganization())
@@ -221,8 +221,8 @@ private with sharing class fflib_SObjectSelectorTest
 	static void testWithOrderingNullsLast()
 	{
 		// Build the selector to test with
-		Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector(false, false, false, false);
-		fflib_QueryFactory qf = selector.newQueryFactory();
+		TestBPG_SObjectSelector selector = new TestBPG_SObjectSelector(false, false, false, false);
+		BPG_QueryFactory qf = selector.newQueryFactory();
 		
 		// Add in the expected fields
 		Set<String> expectedSelectFields = new Set<String>{ 'Name', 'Id', 'AccountNumber', 'AnnualRevenue' };
@@ -248,14 +248,14 @@ private with sharing class fflib_SObjectSelectorTest
 		System.assertEquals(expected, actual);
 	}
 	
-	private class Testfflib_SObjectSelector extends fflib_SObjectSelector
+	private class TestBPG_SObjectSelector extends BPG_SObjectSelector
 	{
-		public Testfflib_SObjectSelector()
+		public TestBPG_SObjectSelector()
 		{
 			super();
 		}
 
-		public Testfflib_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields)
+		public TestBPG_SObjectSelector(Boolean includeFieldSetFields, Boolean enforceCRUD, Boolean enforceFLS, Boolean sortSelectFields)
 		{
 			super(includeFieldSetFields, enforceCRUD, enforceFLS, sortSelectFields);
 		}

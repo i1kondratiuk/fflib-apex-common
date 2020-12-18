@@ -28,7 +28,7 @@
  * QueryFactory provides an object-oriented way of building SOQL queries without resorting to string manipulation.
  * This class is not meant to be used as a replacement for all SOQL queries, and due to the relatively high overhead in both CPU and describe calls
  * should be used in places where highly dynamic queries, such as those that include field sets or are mutated heavily
- * in multiple locations are a good fit for use with fflib_QueryFactory.
+ * in multiple locations are a good fit for use with BPG_QueryFactory.
  * 
  * To use call construct a new instance for each query you intend to make.
  * To add additional fields to the query make use of the selectField(s) methods.
@@ -47,12 +47,12 @@
  * Current limitations:
  * - Aggregate functions are not currently supported.
  * - Cross-object references currently require using String argument(s) to selectField(s).
- * - The behavior of serializing and deserializing an fflib_QueryFactory instance is currently untested and undefined.
+ * - The behavior of serializing and deserializing an BPG_QueryFactory instance is currently untested and undefined.
  *
  * There is a google doc providing additional guidance on the use of this class with field sets at
  * https://docs.google.com/a/financialforce.com/document/d/1I4cxN4xHT4UJj_3Oi0YBL_MJ5chm-KG8kMN1D1un8-g/edit?usp=sharing
 **/
-public class fflib_QueryFactory { //No explicit sharing declaration - inherit from caller
+public class BPG_QueryFactory { //No explicit sharing declaration - inherit from caller
 	public enum SortOrder {ASCENDING, DESCENDING}
 
 	/**
@@ -82,15 +82,15 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * to add a subselect, call the subselectQuery method, passing in the ChildRelationship.
 	**/
 	private Schema.ChildRelationship relationship;
-	private Map<Schema.ChildRelationship, fflib_QueryFactory> subselectQueryMap;
+	private Map<Schema.ChildRelationship, BPG_QueryFactory> subselectQueryMap;
 
 	private String getFieldPath(String fieldName){
 		if(!fieldName.contains('.')){ //single field
-			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(table).getField(fieldName.toLowerCase());
+			Schema.SObjectField token = BPG_SObjectDescribe.getDescribe(table).getField(fieldName.toLowerCase());
 			if(token == null)
 				throw new InvalidFieldException(fieldName,this.table);
 			if (enforceFLS) 
-				fflib_SecurityUtils.checkFieldIsReadable(this.table, token);	
+				BPG_SecurityUtils.checkFieldIsReadable(this.table, token);	
 			return token.getDescribe().getName();
 		}
 
@@ -100,11 +100,11 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		Iterator<String> i = fieldName.split('\\.').iterator();
 		while(i.hasNext()){
 			String field = i.next();
-			Schema.SObjectField token = fflib_SObjectDescribe.getDescribe(lastSObjectType).getField(field.toLowerCase());
+			Schema.SObjectField token = BPG_SObjectDescribe.getDescribe(lastSObjectType).getField(field.toLowerCase());
 			DescribeFieldResult tokenDescribe = token != null ? token.getDescribe() : null;
 			
 			if (token != null && enforceFLS) {
-				fflib_SecurityUtils.checkFieldIsReadable(lastSObjectType, token);
+				BPG_SecurityUtils.checkFieldIsReadable(lastSObjectType, token);
 			}
 
 			if(token != null && i.hasNext() && tokenDescribe.getSoapType() == Schema.SoapType.ID){
@@ -132,23 +132,23 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 
 	/**
-	 * fflib_QueryFactory instances will be considered equal if they produce the same SOQL query.
+	 * BPG_QueryFactory instances will be considered equal if they produce the same SOQL query.
 	 * A faster comparison will first be attempted to check if they apply to the same table, and contain the same number of fields selected.
-	 * This method will never return true if the provided object is not an instance of fflib_QueryFactory. 
+	 * This method will never return true if the provided object is not an instance of BPG_QueryFactory. 
 	 * @param obj the object to check equality of.
 	**/
 	public Boolean equals(Object obj){
-		if( !(obj instanceof fflib_QueryFactory) || ((fflib_QueryFactory)obj).table != this.table || ((fflib_QueryFactory)obj).fields.size() != this.fields.size() )
+		if( !(obj instanceof BPG_QueryFactory) || ((BPG_QueryFactory)obj).table != this.table || ((BPG_QueryFactory)obj).fields.size() != this.fields.size() )
 			return false;
-		return ((fflib_QueryFactory)obj).toSOQL() == this.toSOQL();
+		return ((BPG_QueryFactory)obj).toSOQL() == this.toSOQL();
 	}
 
 	/**
-	 * Construct a new fflib_QueryFactory instance with no options other than the FROM clause.
+	 * Construct a new BPG_QueryFactory instance with no options other than the FROM clause.
 	 * You *must* call selectField(s) before {@link #toSOQL} will return a valid, runnable query.
 	 * @param table	the SObject to be used in the FROM clause of the resultant query. This sets the value of {@link #table}.
 	**/
-	public fflib_QueryFactory(Schema.SObjectType table){
+	public BPG_QueryFactory(Schema.SObjectType table){
 		this.table = table;
 		fields = new Set<String>();
 		order = new List<Ordering>();
@@ -156,13 +156,13 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 
 	/**
-	 * Construct a new fflib_QueryFactory instance with no options other than the FROM clause and the relationship.
+	 * Construct a new BPG_QueryFactory instance with no options other than the FROM clause and the relationship.
 	 * This should be used when constructing a subquery query for addition to a parent query. 
 	 * Objects created with this constructor cannot be added to another object using the subselectQuery method.
 	 * You *must* call selectField(s) before {@link #toSOQL} will return a valid, runnable query.
 	 * @param relationship the ChildRelationship to be used in the FROM Clause of the resultant Query (when set overrides value of table). This sets the value of {@link #relationship} and {@link #table}.
 	**/
-	private fflib_QueryFactory(Schema.ChildRelationship relationship){
+	private BPG_QueryFactory(Schema.ChildRelationship relationship){
 		this(relationship.getChildSObject()); 
 		this.relationship = relationship;
 	}
@@ -171,8 +171,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * This method checks to see if the User has Read Access on {@link #table}. 
 	 * Asserts true if User has access.
 	 **/
-	public fflib_QueryFactory assertIsAccessible(){
-		fflib_SecurityUtils.checkObjectIsReadable(table);
+	public BPG_QueryFactory assertIsAccessible(){
+		BPG_SecurityUtils.checkObjectIsReadable(table);
 		return this;
 	}
 
@@ -182,7 +182,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * is that FLS read permission will not be checked.
 	 * @param enforce whether to enforce field level security (read)
 	 **/
-	public fflib_QueryFactory setEnforceFLS(Boolean enforce){
+	public BPG_QueryFactory setEnforceFLS(Boolean enforce){
 		this.enforceFLS = enforce;
 		return this;
 	}
@@ -193,7 +193,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * If you are processing large query sets, you should switch this off.
 	 * @param doSort whether or not select fields should be sorted in the soql statement.
 	 **/
-	public fflib_QueryFactory setSortSelectFields(Boolean doSort){
+	public BPG_QueryFactory setSortSelectFields(Boolean doSort){
 		this.sortSelectFields = doSort;
 		return this;
 	}
@@ -203,7 +203,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * Selecting fields is idempotent, if this field is already selected calling this method will have no additional impact.
 	 * @param fieldName the API name of the field to add to the query's SELECT clause.
 	 **/
-	public fflib_QueryFactory selectField(String fieldName){ 		
+	public BPG_QueryFactory selectField(String fieldName){ 		
 		fields.add( getFieldPath(fieldName) );
 		return this;
 	} 
@@ -213,11 +213,11 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param field the {@link Schema.SObjectField} to select with this query.
 	 * @exception InvalidFieldException If the field is null {@code field}.
 	**/
-	public fflib_QueryFactory selectField(Schema.SObjectField field){
+	public BPG_QueryFactory selectField(Schema.SObjectField field){
 		if(field == null)
 			throw new InvalidFieldException(null,this.table);
 		if (enforceFLS) 
-			fflib_SecurityUtils.checkFieldIsReadable(table, field);
+			BPG_SecurityUtils.checkFieldIsReadable(table, field);
 		fields.add( getFieldTokenPath(field) );
 		return this;
 	}
@@ -225,7 +225,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * Selects multiple fields. This acts the same as calling {@link #selectField(String)} multiple times.
 	 * @param fieldNames the Set of field API names to select.
 	**/
-	public fflib_QueryFactory selectFields(Set<String> fieldNames){
+	public BPG_QueryFactory selectFields(Set<String> fieldNames){
 		for(String fieldName:fieldNames){
 			fields.add( getFieldPath(fieldName) );
 		}	
@@ -235,7 +235,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * Selects multiple fields. This acts the same as calling {@link #selectField(String)} multiple times.
 	 * @param fieldNames the List of field API names to select.
 	**/
-	public fflib_QueryFactory selectFields(List<String> fieldNames){
+	public BPG_QueryFactory selectFields(List<String> fieldNames){
 		for(String fieldName:fieldNames)
 			fields.add( getFieldPath(fieldName) );
 		return this;
@@ -245,12 +245,12 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param fields the set of {@link Schema.SObjectField}s to select.
 	 * @exception InvalidFieldException if the fields are null {@code fields}.
 	**/
-	public fflib_QueryFactory selectFields(Set<Schema.SObjectField> fields){
+	public BPG_QueryFactory selectFields(Set<Schema.SObjectField> fields){
 		for(Schema.SObjectField token:fields){
 			if(token == null)
 				throw new InvalidFieldException();	
 			if (enforceFLS) 
-				fflib_SecurityUtils.checkFieldIsReadable(table, token);	
+				BPG_SecurityUtils.checkFieldIsReadable(table, token);	
 			this.fields.add( getFieldTokenPath(token) );
 		}
 		return this;
@@ -260,12 +260,12 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param fields the set of {@link Schema.SObjectField}s to select.
 	 * @exception InvalidFieldException if the fields are null {@code fields}.	 
 	**/
-	public fflib_QueryFactory selectFields(List<Schema.SObjectField> fields){
+	public BPG_QueryFactory selectFields(List<Schema.SObjectField> fields){
 		for(Schema.SObjectField token:fields){
 			if(token == null)
 				throw new InvalidFieldException();
 			if (enforceFLS) 
-				fflib_SecurityUtils.checkFieldIsReadable(table, token);		
+				BPG_SecurityUtils.checkFieldIsReadable(table, token);		
 			this.fields.add( getFieldTokenPath(token) );
 		}
 		return this;
@@ -273,7 +273,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	/**
 	 * @see #selectFieldSet(Schema.FieldSet,Boolean)
 	**/
-	public fflib_QueryFactory selectFieldSet(Schema.FieldSet fieldSet){
+	public BPG_QueryFactory selectFieldSet(Schema.FieldSet fieldSet){
 		return selectFieldSet(fieldSet,true);
 	}
 	/**
@@ -282,7 +282,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param allowCrossObject if false this method will throw an exception if any fields in the field set reference fields on a related record.
 	 * @exception InvalidFieldSetException if the fieldset is invalid for table {@code fields}.	 
 	**/
-	public fflib_QueryFactory selectFieldSet(Schema.FieldSet fieldSet, Boolean allowCrossObject){ 
+	public BPG_QueryFactory selectFieldSet(Schema.FieldSet fieldSet, Boolean allowCrossObject){ 
 		if(fieldSet.getSObjectType() != table)
 			throw new InvalidFieldSetException('Field set "'+fieldSet.getName()+'" is not for SObject type "'+table+'"');
 		for(Schema.FieldSetMember field: fieldSet.getFields()){
@@ -295,7 +295,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	/**
 	 * @param conditionExpression Sets the WHERE clause to the string provided. Do not include the "WHERE".
 	**/
-	public fflib_QueryFactory setCondition(String conditionExpression){
+	public BPG_QueryFactory setCondition(String conditionExpression){
 		this.conditionExpression = conditionExpression;
 		return this;
 	}
@@ -308,7 +308,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	/**
 	 * @param limitCount if not null causes a LIMIT clause to be added to the resulting query.
 	**/
-	public fflib_QueryFactory setLimit(Integer limitCount){
+	public BPG_QueryFactory setLimit(Integer limitCount){
 		this.limitCount = limitCount;
 		return this;
 	}
@@ -321,7 +321,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	/**
 	 * @param offsetCount if not null causes a OFFSET clause to be added to the resulting query.
 	**/
-	public fflib_QueryFactory setOffset(Integer offsetCount){
+	public BPG_QueryFactory setOffset(Integer offsetCount){
 		this.offsetCount = offsetCount;
 		return this;
 	}
@@ -332,17 +332,17 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		return this.offsetCount;
 	}
 	/**
-	 * @param o an instance of {@link fflib_QueryFactory.Ordering} to be added to the query's ORDER BY clause.
+	 * @param o an instance of {@link BPG_QueryFactory.Ordering} to be added to the query's ORDER BY clause.
 	**/
-	public fflib_QueryFactory addOrdering(Ordering o){
+	public BPG_QueryFactory addOrdering(Ordering o){
 		this.order.add(o);
 		return this;
 	}
 
 	/**
-	 * @param o an instance of {@link fflib_QueryFactory.Ordering} to remove all existing (for instance defaults) and be added to the query's ORDER BY clause.
+	 * @param o an instance of {@link BPG_QueryFactory.Ordering} to remove all existing (for instance defaults) and be added to the query's ORDER BY clause.
 	 **/
-	public fflib_QueryFactory setOrdering(Ordering o){
+	public BPG_QueryFactory setOrdering(Ordering o){
 		this.order = new List<Ordering>{ o };
 		return this;
 	}
@@ -367,8 +367,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
 	 * @param related The related object type
 	**/
-	public fflib_QueryFactory subselectQuery(SObjectType related){ 
-		System.debug(LoggingLevel.WARN, 'fflib_QueryFactory.subselectQuery(Schema.SObjectType) is deprecated and will be removed in a future release. Use fflib_QueryFactory.subselectQuery(String) or fflib_QueryFactory.subselectQuery(ChildRelationship) instead.');
+	public BPG_QueryFactory subselectQuery(SObjectType related){ 
+		System.debug(LoggingLevel.WARN, 'BPG_QueryFactory.subselectQuery(Schema.SObjectType) is deprecated and will be removed in a future release. Use BPG_QueryFactory.subselectQuery(String) or BPG_QueryFactory.subselectQuery(ChildRelationship) instead.');
 		return setSubselectQuery(getChildRelationship(related), false);
 	}
 
@@ -380,8 +380,8 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param related The related object type
 	 * @param assertIsAccessible indicates whether to check if the user has access to the subquery object
 	**/
-	public fflib_QueryFactory subselectQuery(SObjectType related, Boolean assertIsAccessible){
-		System.debug(LoggingLevel.WARN, 'fflib_QueryFactory.subselectQuery(Schema.SObjectType, Boolean) is deprecated and will be removed in a future release. Use fflib_QueryFactory.subselectQuery(String, Boolean) or fflib_QueryFactory.subselectQuery(ChildRelationship, Boolean) instead.'); 
+	public BPG_QueryFactory subselectQuery(SObjectType related, Boolean assertIsAccessible){
+		System.debug(LoggingLevel.WARN, 'BPG_QueryFactory.subselectQuery(Schema.SObjectType, Boolean) is deprecated and will be removed in a future release. Use BPG_QueryFactory.subselectQuery(String, Boolean) or BPG_QueryFactory.subselectQuery(ChildRelationship, Boolean) instead.'); 
 		return setSubselectQuery(getChildRelationship(related), assertIsAccessible);
 	}
 
@@ -391,7 +391,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
 	 * @param relationshipName The relationshipName to be added as a subquery
 	**/
-	public fflib_QueryFactory subselectQuery(String relationshipName){ 
+	public BPG_QueryFactory subselectQuery(String relationshipName){ 
 		return subselectQuery(relationshipName, false);
 	}
 
@@ -402,7 +402,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param relationshipName The relationshipName to be added as a subquery
 	 * @param assertIsAccessible indicates whether to check if the user has access to the subquery object
 	**/
-	public fflib_QueryFactory subselectQuery(String relationshipName, Boolean assertIsAccessible){
+	public BPG_QueryFactory subselectQuery(String relationshipName, Boolean assertIsAccessible){
 		Schema.ChildRelationship relationship = getChildRelationship(relationshipName);
 		if (relationship != null) {
 			return setSubselectQuery(relationship, assertIsAccessible);
@@ -416,7 +416,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
 	 * @param relationship The ChildRelationship to be added as a subquery
 	**/
-	public fflib_QueryFactory subselectQuery(Schema.ChildRelationship relationship){ 
+	public BPG_QueryFactory subselectQuery(Schema.ChildRelationship relationship){ 
 		return subselectQuery(relationship, false);
 	}
 
@@ -427,7 +427,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param relationship The ChildRelationship to be added as a subquery
 	 * @param assertIsAccessible indicates whether to check if the user has access to the subquery object
 	**/
-	public fflib_QueryFactory subselectQuery(Schema.ChildRelationship relationship, Boolean assertIsAccessible){
+	public BPG_QueryFactory subselectQuery(Schema.ChildRelationship relationship, Boolean assertIsAccessible){
 		return setSubselectQuery(relationship, assertIsAccessible);
 	}
 
@@ -437,18 +437,18 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @exception InvalidSubqueryRelationshipException If this method is called on a subselectQuery or with an invalid relationship 
 	 * @param relationship The ChildRelationship to be added as a subquery
 	**/
-	private fflib_QueryFactory setSubselectQuery(Schema.ChildRelationship relationship, Boolean assertIsAccessible){
+	private BPG_QueryFactory setSubselectQuery(Schema.ChildRelationship relationship, Boolean assertIsAccessible){
 		if (this.relationship != null){
 			throw new InvalidSubqueryRelationshipException('Invalid call to subselectQuery.  You may not add a subselect query to a subselect query.');
 		} 
 		if (this.subselectQueryMap == null){
-			this.subselectQueryMap = new Map<Schema.ChildRelationship, fflib_QueryFactory>();
+			this.subselectQueryMap = new Map<Schema.ChildRelationship, BPG_QueryFactory>();
 		}
 		if (this.subselectQueryMap.containsKey(relationship)){
 			return subselectQueryMap.get(relationship);
 		}
 		
-		fflib_QueryFactory subSelectQuery = new fflib_QueryFactory(relationship);
+		BPG_QueryFactory subSelectQuery = new BPG_QueryFactory(relationship);
 		
 		//The child queryFactory should be configured in the same way as the parent by default - can override after if required
 		subSelectQuery.setSortSelectFields(sortSelectFields);
@@ -461,9 +461,9 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	}
 
 	/**
-	 * @returns the list of subquery instances of fflib_QueryFactory which will be added to the SOQL as relationship/child/sub-queries.
+	 * @returns the list of subquery instances of BPG_QueryFactory which will be added to the SOQL as relationship/child/sub-queries.
 	**/
-	public List<fflib_QueryFactory> getSubselectQueries(){
+	public List<BPG_QueryFactory> getSubselectQueries(){
 		if (subselectQueryMap != null) {
 			return subselectQueryMap.values();
 		}	
@@ -509,7 +509,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/  
-    public fflib_QueryFactory addOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
+    public BPG_QueryFactory addOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
 		order.add(
 			new Ordering(getFieldPath(fieldName), direction, nullsLast)
 		);	
@@ -527,7 +527,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/
-    public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
+    public BPG_QueryFactory addOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
 		order.add(
 			new Ordering(getFieldTokenPath(field), direction, nullsLast)
 		);	
@@ -546,7 +546,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param fieldName The string value of the field to be sorted on
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	**/  
-    public fflib_QueryFactory addOrdering(String fieldName, SortOrder direction){
+    public BPG_QueryFactory addOrdering(String fieldName, SortOrder direction){
 		order.add(
 			new Ordering(getFieldPath(fieldName), direction)
 		);	
@@ -565,7 +565,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param field The SObjectField to sort.  This can only be a direct reference.
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	**/
-    public fflib_QueryFactory addOrdering(SObjectField field, SortOrder direction){
+    public BPG_QueryFactory addOrdering(SObjectField field, SortOrder direction){
 		order.add(
 			new Ordering(getFieldTokenPath(field), direction)
 		);	
@@ -583,7 +583,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/
-	public fflib_QueryFactory setOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
+	public BPG_QueryFactory setOrdering(String fieldName, SortOrder direction, Boolean nullsLast){
 		Ordering ordr = new Ordering(getFieldPath(fieldName), direction, nullsLast);
 		return setOrdering(ordr);
 	}
@@ -599,7 +599,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	 * @param nullsLast whether to sort null values last (NULLS LAST keyword included).
 	**/
-	public fflib_QueryFactory setOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
+	public BPG_QueryFactory setOrdering(SObjectField field, SortOrder direction, Boolean nullsLast){
 		Ordering ordr = new Ordering(getFieldTokenPath(field), direction, nullsLast);
 		return setOrdering(ordr);
 	}
@@ -614,7 +614,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param fieldName The string value of the field to be sorted on
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	**/
-	public fflib_QueryFactory setOrdering(String fieldName, SortOrder direction){
+	public BPG_QueryFactory setOrdering(String fieldName, SortOrder direction){
 		Ordering ordr = new Ordering(getFieldPath(fieldName), direction);
 		return setOrdering(ordr);
 	}
@@ -629,7 +629,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 	 * @param field The SObjectField to sort.  This can only be a direct reference.
 	 * @param direction the direction to be sorted on (ASCENDING or DESCENDING)
 	**/
-	public fflib_QueryFactory setOrdering(SObjectField field, SortOrder direction){
+	public BPG_QueryFactory setOrdering(SObjectField field, SortOrder direction){
 		Ordering ordr = new Ordering(getFieldTokenPath(field), direction);
 		return setOrdering(ordr);
 	}
@@ -642,7 +642,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		String result = 'SELECT ';
 		//if no fields have been added, just add the Id field so that the query or subquery will not just fail
 		if (fields.size() == 0){
-			if (enforceFLS) fflib_SecurityUtils.checkFieldIsReadable(table, 'Id');
+			if (enforceFLS) BPG_SecurityUtils.checkFieldIsReadable(table, 'Id');
 			result += 'Id';
 		}else {
 			List<String> fieldsToQuery = new List<String>(fields);
@@ -655,7 +655,7 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 		}
 		
 		if(subselectQueryMap != null && !subselectQueryMap.isEmpty()){
-			for (fflib_QueryFactory childRow : subselectQueryMap.values()){
+			for (BPG_QueryFactory childRow : subselectQueryMap.values()){
 				result += ', (' + childRow.toSOQL() + ') ';
 			}	
 		}
@@ -681,19 +681,19 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 
 	/**
 	 * Create a "deep" clone of this object that can be safely mutated without affecting the cloned instance
-	 * @return a deep clone of this fflib_QueryFactory
+	 * @return a deep clone of this BPG_QueryFactory
 	**/
-	public fflib_QueryFactory deepClone(){	
+	public BPG_QueryFactory deepClone(){	
 
-		fflib_QueryFactory clone = new fflib_QueryFactory(this.table)
+		BPG_QueryFactory clone = new BPG_QueryFactory(this.table)
 			.setLimit(this.limitCount)
 			.setOffset(this.offsetCount)
 			.setCondition(this.conditionExpression)
 			.setEnforceFLS(this.enforceFLS);
 
-		Map<Schema.ChildRelationship, fflib_QueryFactory> subqueries = this.subselectQueryMap;
+		Map<Schema.ChildRelationship, BPG_QueryFactory> subqueries = this.subselectQueryMap;
 		if(subqueries != null) {
-			Map<Schema.ChildRelationship, fflib_QueryFactory> clonedSubqueries = new Map<Schema.ChildRelationship, fflib_QueryFactory>();
+			Map<Schema.ChildRelationship, BPG_QueryFactory> clonedSubqueries = new Map<Schema.ChildRelationship, BPG_QueryFactory>();
 			for(Schema.ChildRelationship key : subqueries.keySet()) {
 				clonedSubqueries.put(key, subqueries.get(key).deepClone());
 			}
@@ -714,19 +714,19 @@ public class fflib_QueryFactory { //No explicit sharing declaration - inherit fr
 
 		public Ordering(String sobjType, String fieldName, SortOrder direction){
 			this(
-				fflib_SObjectDescribe.getDescribe(sobjType).getField(fieldName),
+				BPG_SObjectDescribe.getDescribe(sobjType).getField(fieldName),
 				direction
 			);
 		}
 		/**
-		 * Construct a new ordering instance for use with {@link fflib_QueryFactory#addOrdering}
+		 * Construct a new ordering instance for use with {@link BPG_QueryFactory#addOrdering}
 		 * Once constructed it's properties may not be modified.
 		**/
 		public Ordering(Schema.SObjectField field, SortOrder direction){
-			this(fflib_QueryFactory.getFieldTokenPath(field), direction, false); //SOQL docs state NULLS FIRST is default behavior
+			this(BPG_QueryFactory.getFieldTokenPath(field), direction, false); //SOQL docs state NULLS FIRST is default behavior
 		}
 		public Ordering(Schema.SObjectField field, SortOrder direction, Boolean nullsLast){
-			this(fflib_QueryFactory.getFieldTokenPath(field), direction, nullsLast);
+			this(BPG_QueryFactory.getFieldTokenPath(field), direction, nullsLast);
 		}
 		@TestVisible
 		private Ordering(String field, SortOrder direction){

@@ -29,10 +29,10 @@
 	Used under a BSD license: https://github.com/capeterson/Apex-Util/blob/master/LICENSE
 **/
 @isTest
-private class fflib_SObjectDescribeTest {
+private class BPG_SObjectDescribeTest {
 
 	/**
-	 * Verify that the different ways of getting your hands on an fflib_SObjectDescribe instance all handle null inputs
+	 * Verify that the different ways of getting your hands on an BPG_SObjectDescribe instance all handle null inputs
 	 * (and blank/empty strings, why not?) by returning null - since there's no possible way to resolve it.
 	**/
 	@isTest
@@ -41,23 +41,23 @@ private class fflib_SObjectDescribeTest {
 		Schema.SObjectType nullType = null;
 		Schema.DescribeSObjectResult nullDescribe = null;
 		SObject nullSObject = null;
-		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(nullStr));
-		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(''));
-		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(' '));
-		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(nullType));
-		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(nullDescribe));
-		System.assertEquals(null, fflib_SObjectDescribe.getDescribe(nullSObject));
+		System.assertEquals(null, BPG_SObjectDescribe.getDescribe(nullStr));
+		System.assertEquals(null, BPG_SObjectDescribe.getDescribe(''));
+		System.assertEquals(null, BPG_SObjectDescribe.getDescribe(' '));
+		System.assertEquals(null, BPG_SObjectDescribe.getDescribe(nullType));
+		System.assertEquals(null, BPG_SObjectDescribe.getDescribe(nullDescribe));
+		System.assertEquals(null, BPG_SObjectDescribe.getDescribe(nullSObject));
 	}
 
 	@isTest
 	static void NamespacedAttributeMap_implementations(){
-		fflib_SObjectDescribe.GlobalDescribeMap gdm = fflib_SObjectDescribe.getGlobalDescribe();
+		BPG_SObjectDescribe.GlobalDescribeMap gdm = BPG_SObjectDescribe.getGlobalDescribe();
 		Schema.SObjectType accountObjType = gdm.get('AccOunT');
 		System.assertEquals(accountObjType, Account.SobjectType);
 		System.assertEquals(Schema.getGlobalDescribe().size(), gdm.size());
 
-		fflib_SObjectDescribe acccountDescribe = fflib_SObjectDescribe.getDescribe(accountObjType);
-		fflib_SObjectDescribe.FieldsMap fields = acccountDescribe.getFields();
+		BPG_SObjectDescribe acccountDescribe = BPG_SObjectDescribe.getDescribe(accountObjType);
+		BPG_SObjectDescribe.FieldsMap fields = acccountDescribe.getFields();
 		System.assert( fields.keySet().containsAll(acccountDescribe.getFieldsMap().keySet()) );
 
 		System.assertEquals(fields.get('name'), Account.SObjectType.fields.name); //behavior of FieldsMap is tested in another method
@@ -69,14 +69,14 @@ private class fflib_SObjectDescribeTest {
 
 	@isTest
 	static void FieldsMap(){
-		String fakeNamespace = 'fflib_test';
+		String fakeNamespace = 'BPG_test';
 		Map<String,Schema.SObjectField> fakeFieldData = new Map<String,Schema.SObjectField>{
 			'name__c' => Contact.SObjectType.fields.name, //re-use standard field types since we can't mock them
 			fakeNamespace+'__name__c' => Account.SObjectType.fields.name,
 			fakeNamespace+'__otherField__c' => Account.SObjectType.fields.name,
 			'createddate' => Contact.SObjectType.fields.CreatedDate
 		};
-		fflib_SObjectDescribe.FieldsMap fields = new fflib_SObjectDescribe.FieldsMap(fakeFieldData);
+		BPG_SObjectDescribe.FieldsMap fields = new BPG_SObjectDescribe.FieldsMap(fakeFieldData);
 		fields.currentNamespace = fakeNamespace;
 		System.assertEquals(true, fields.containsKey('name__c') );
 		System.assertEquals(true, fields.containsKey(fakeNamespace.toUpperCase()+'__nAMe__c') );
@@ -94,13 +94,13 @@ private class fflib_SObjectDescribeTest {
 
 	@isTest
 	static void GlobalDescribeMap(){
-		String fakeNamespace = 'fflib_test';
+		String fakeNamespace = 'BPG_test';
 		Map<String,Schema.SObjectType> fakeFieldData = new Map<String,Schema.SObjectType>{
 			'name__c' => Contact.SObjectType, //re-use stndard object types since we can't mock them
 			fakeNamespace+'__name__c' => Account.SObjectType,
 			'createddate' => Lead.SObjectType
 		};
-		fflib_SObjectDescribe.GlobalDescribeMap gdm = new fflib_SObjectDescribe.GlobalDescribeMap(fakeFieldData);
+		BPG_SObjectDescribe.GlobalDescribeMap gdm = new BPG_SObjectDescribe.GlobalDescribeMap(fakeFieldData);
 		gdm.currentNamespace = fakeNamespace;
 		System.assertEquals(true, gdm.containsKey('name__c') );
 		System.assertEquals(true, gdm.containsKey(fakeNamespace+'__name__c') );
@@ -112,16 +112,16 @@ private class fflib_SObjectDescribeTest {
 
 	@isTest //Tests all forms of the getDescribe static
 	static void getAccountDescribes(){
-		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe('Account');
-		fflib_SObjectDescribe d2 = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
-		fflib_SObjectDescribe d3 = fflib_SObjectDescribe.getDescribe(Schema.SObjectType.Account);
+		BPG_SObjectDescribe d = BPG_SObjectDescribe.getDescribe('Account');
+		BPG_SObjectDescribe d2 = BPG_SObjectDescribe.getDescribe(Account.SObjectType);
+		BPG_SObjectDescribe d3 = BPG_SObjectDescribe.getDescribe(Schema.SObjectType.Account);
 		System.assertEquals('Account', d.getDescribe().getName());
 		System.assert( (d === d2 && d2 === d3) ,'All three getDescribe calls should return the same cached instance.');
 	}
 
 	@isTest
 	static void simpleAccountFieldDescribe(){
-		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
+		BPG_SObjectDescribe d = BPG_SObjectDescribe.getDescribe(Account.SObjectType);
 		Map<String,Schema.SObjectField> fields;
 		for(integer i = 0; i < 10; i++){
 			fields = d.getFieldsMap();
@@ -141,7 +141,7 @@ private class fflib_SObjectDescribeTest {
 
 	@isTest
 	static void simpleAccountFieldSetDescribe(){
-		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
+		BPG_SObjectDescribe d = BPG_SObjectDescribe.getDescribe(Account.SObjectType);
 		Map<String,Schema.FieldSet> fields;
 		for(integer i = 0; i < 10; i++){
 			fields = d.getFieldSetsMap();
@@ -160,23 +160,23 @@ private class fflib_SObjectDescribeTest {
 
 	@isTest
     	static void simpleAccountGetNameField(){
-        	fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
+        	BPG_SObjectDescribe d = BPG_SObjectDescribe.getDescribe(Account.SObjectType);
         	Schema.SObjectField nameField = d.getNameField();
         	System.assertEquals('Name', nameField.getDescribe().getName());
 	}
 
 	@isTest
 	static void flushCache(){
-		fflib_SObjectDescribe d = fflib_SObjectDescribe.getDescribe('Account');
-		fflib_SObjectDescribe.flushCache();
-		fflib_SObjectDescribe d2 = fflib_SObjectDescribe.getDescribe('Account');
+		BPG_SObjectDescribe d = BPG_SObjectDescribe.getDescribe('Account');
+		BPG_SObjectDescribe.flushCache();
+		BPG_SObjectDescribe d2 = BPG_SObjectDescribe.getDescribe('Account');
 		System.assert(d !== d2, 'Second object should be a fresh instance after a cache flush.' );
 	}
 
 	@isTest
 	static void rawGlobalDescribeCheck(){
 		Map<String,Schema.SObjectType> systemGd = Schema.getGlobalDescribe();
-		Map<String,Schema.SObjectType> cachedGd = fflib_SObjectDescribe.getRawGlobalDescribe();
+		Map<String,Schema.SObjectType> cachedGd = BPG_SObjectDescribe.getRawGlobalDescribe();
 		System.assertEquals(systemGd.size(),cachedGd.size());
 	}
 

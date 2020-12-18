@@ -25,7 +25,7 @@
 **/
 
 @IsTest
-private with sharing class fflib_SObjectUnitOfWorkTest
+private with sharing class BPG_SObjectUnitOfWorkTest
 {
     // SObjects (in order of dependency) used by UnitOfWork in tests bellow
     private static List<Schema.SObjectType> MY_SOBJECTS =
@@ -44,7 +44,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         email.setToAddresses(new list<String>{ 'foobar@test.com' });
         email.setPlainTextBody('See Spot run.');
 
-        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        BPG_SObjectUnitOfWork uow = new BPG_SObjectUnitOfWork(MY_SOBJECTS);
 
         uow.m_emailWork = new Mock_SendEmailWork();
 
@@ -73,7 +73,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     {
         // Insert Opportunities with UnitOfWork
         {
-            fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+            BPG_SObjectUnitOfWork uow = new BPG_SObjectUnitOfWork(MY_SOBJECTS);
             for(Integer o=0; o<10; o++)
             {
                 Opportunity opp = new Opportunity();
@@ -114,7 +114,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         // Update some records with UnitOfWork
         {
-            fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+            BPG_SObjectUnitOfWork uow = new BPG_SObjectUnitOfWork(MY_SOBJECTS);
             Opportunity opp = opps[0];
             opp.Name = opp.Name + ' Changed';
             uow.registerDirty(new List<SObject>{opp});
@@ -157,7 +157,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         // Delete some records with the UnitOfWork
         {
-            fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+            BPG_SObjectUnitOfWork uow = new BPG_SObjectUnitOfWork(MY_SOBJECTS);
             uow.registerDeleted(new List<SObject>{opps[0].OpportunityLineItems[1].PricebookEntry.Product2}); // Delete PricebookEntry Product
             uow.registerDeleted(new List<SObject>{opps[0].OpportunityLineItems[1].PricebookEntry}); // Delete PricebookEntry
             uow.registerDeleted(new List<SObject>{opps[0].OpportunityLineItems[1]}); // Delete OpportunityLine Item
@@ -367,7 +367,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         Opportunity opp = new Opportunity(Id = insertedOpp.Id, Name = 'Never');
         Opportunity opp2 = new Opportunity(Id = insertedOpp.Id, Name = 'Expected');
 
-        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        BPG_SObjectUnitOfWork uow = new BPG_SObjectUnitOfWork(MY_SOBJECTS);
         uow.registerDirty(opp);
         uow.registerDirty(opp2);
         uow.commitWork();
@@ -390,7 +390,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         Opportunity nameUpdate = new Opportunity(Id = opp.Id, Name = 'UpdateName');
         Opportunity amountUpdate = new Opportunity(Id = opp.Id, Amount = 250);
-        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+        BPG_SObjectUnitOfWork uow = new BPG_SObjectUnitOfWork(MY_SOBJECTS);
         uow.registerDirty(nameUpdate);
         uow.registerDirty(amountUpdate, new List<SObjectField> { Opportunity.Amount } );
         uow.commitWork();
@@ -409,18 +409,18 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     {
         // GIVEN a list of existing records
         Opportunity opportunityA = new Opportunity(
-                Id = fflib_IDGenerator.generate(Opportunity.SObjectType),
+                Id = BPG_IDGenerator.generate(Opportunity.SObjectType),
                 Name = 'test name A',
                 StageName = 'Open',
                 CloseDate = System.today());
         Opportunity opportunityB = new Opportunity(
-                Id = fflib_IDGenerator.generate(Opportunity.SObjectType),
+                Id = BPG_IDGenerator.generate(Opportunity.SObjectType),
                 Name = 'test name B',
                 StageName = 'Open',
                 CloseDate = System.today());
 
         MockDML mockDML = new MockDML();
-        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
+        BPG_SObjectUnitOfWork uow = new BPG_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
         uow.registerDirty(new List<Opportunity>{ opportunityA, opportunityB });
 
         // WHEN we register the records again with different fields updated
@@ -440,7 +440,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         // THEN the records should be registered with both changed values for Amount and StageName
         System.assert(
-                new fflib_MatcherDefinitions.SObjectsWith(
+                new BPG_MatcherDefinitions.SObjectsWith(
                         new List<Map<SObjectField, Object>>{
                                 new Map<SObjectField, Object>
                                 {
@@ -468,18 +468,18 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     {
         // GIVEN a list of existing records
         Opportunity opportunityA = new Opportunity(
-                Id = fflib_IDGenerator.generate(Opportunity.SObjectType),
+                Id = BPG_IDGenerator.generate(Opportunity.SObjectType),
                 Name = 'test name A',
                 StageName = 'Open',
                 CloseDate = System.today());
         Opportunity opportunityB = new Opportunity(
-                Id = fflib_IDGenerator.generate(Opportunity.SObjectType),
+                Id = BPG_IDGenerator.generate(Opportunity.SObjectType),
                 Name = 'test name B',
                 StageName = 'Open',
                 CloseDate = System.today());
 
         MockDML mockDML = new MockDML();
-        fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
+        BPG_SObjectUnitOfWork uow = new BPG_SObjectUnitOfWork(MY_SOBJECTS, mockDML);
         uow.registerDirty(new List<Opportunity>{ opportunityA, opportunityB });
 
         // WHEN we register the records again with different fields updated
@@ -506,7 +506,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
 
         // THEN only the first record should be registered with both changed values for Amount and StageName and the second should be the original
         System.assert(
-                !new fflib_MatcherDefinitions.SObjectsWith(
+                !new BPG_MatcherDefinitions.SObjectsWith(
                         new List<Map<SObjectField, Object>>{
                                 new Map<SObjectField, Object>
                                 {
@@ -526,7 +526,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
                 'Not all records should not be registered with the dirty values'
         );
         System.assert(
-                new fflib_MatcherDefinitions.SObjectsWith(
+                new BPG_MatcherDefinitions.SObjectsWith(
                         new List<Map<SObjectField, Object>>{
                                 new Map<SObjectField, Object>
                                 {
@@ -559,7 +559,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         System.assertEquals(0, [SELECT COUNT() FROM Opportunity WHERE StageName = 'Closed']);
         
         Test.startTest();
-            fflib_SObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(MY_SOBJECTS);
+            BPG_SObjectUnitOfWork uow = new BPG_SObjectUnitOfWork(MY_SOBJECTS);
             uow.registerUpsert(new List<Opportunity>{existingOpp, newOpportunity});
             uow.commitWork();
         Test.stopTest();
@@ -592,7 +592,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     /**
      * DoWork implementation that throws exception during processing
      */
-    private class FailDoingWork implements fflib_SObjectUnitOfWork.IDoWork
+    private class FailDoingWork implements BPG_SObjectUnitOfWork.IDoWork
     {
         public void doWork()
         {
@@ -603,7 +603,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     /**
      * Derived unit of work that tracks event notifications and handle registration of type
      */
-    private class DerivedUnitOfWork extends fflib_SObjectUnitOfWork
+    private class DerivedUnitOfWork extends BPG_SObjectUnitOfWork
     {
         private List<String> m_commitWorkEventsFired = new List<String>();
         private Set<Schema.SObjectType> m_registeredTypes = new Set<Schema.SObjectType>();
@@ -718,9 +718,9 @@ private with sharing class fflib_SObjectUnitOfWorkTest
     }
 
     /**
-     * Mock implementation of fflib_SObjectUnitOfWork.SendEmailWork
+     * Mock implementation of BPG_SObjectUnitOfWork.SendEmailWork
      **/
-    private class Mock_SendEmailWork implements fflib_SObjectUnitOfWork.IEmailWork
+    private class Mock_SendEmailWork implements BPG_SObjectUnitOfWork.IEmailWork
     {
         public Mock_SendEmailWork()
         {
@@ -733,7 +733,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         public void doWork()
         {
             doWorkWasCalled = true;
-            // The code in the fflib_SObjectUnitOfWork class
+            // The code in the BPG_SObjectUnitOfWork class
             // causes unit test failures in Orgs that do not
             // have email enabled.
         }
@@ -741,7 +741,7 @@ private with sharing class fflib_SObjectUnitOfWorkTest
         private boolean doWorkWasCalled = false;
     }
 
-    private class MockDML implements fflib_SObjectUnitOfWork.IDML
+    private class MockDML implements BPG_SObjectUnitOfWork.IDML
     {
         public List<SObject> recordsForInsert = new List<SObject>();
         public List<SObject> recordsForUpdate = new List<SObject>();

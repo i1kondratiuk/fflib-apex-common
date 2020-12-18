@@ -28,13 +28,13 @@
  * Utility class for checking FLS/CRUD. NOTE: all "check" methods will throw a SecurityException (or subclass) if the
  * user does not have the proper security granted.
  **/
-public class fflib_SecurityUtils  
+public class BPG_SecurityUtils  
 {
     @TestVisible
     private enum OperationType { CREATE, READ, MODIFY, DEL } //UPDATE and DELETE are reserved words
 
     /**
-     * SecurityException is never be thrown directly by fflib_SecurityUtils, instead all 
+     * SecurityException is never be thrown directly by BPG_SecurityUtils, instead all 
      * forms of CRUD and FLD violations throw subclasses of it. It is provided as a convenience
      * in the event you wish to handle CRUD and FLS violations the same way (e.g. die and display an error)
     **/
@@ -53,13 +53,13 @@ public class fflib_SecurityUtils
     		this.m_operation = operation;
     		this.m_objectType = objectType;
     		if(operation == OperationType.CREATE)
-    			this.setMessage(System.Label.fflib_security_error_object_not_insertable);
+    			this.setMessage(System.Label.BPG_security_error_object_not_insertable);
     		else if(operation == OperationType.READ)
-    			this.setMessage(System.Label.fflib_security_error_object_not_readable);
+    			this.setMessage(System.Label.BPG_security_error_object_not_readable);
     		else if(operation == OperationType.MODIFY)
-    			this.setMessage(System.Label.fflib_security_error_object_not_updateable);
+    			this.setMessage(System.Label.BPG_security_error_object_not_updateable);
     		else if(operation == OperationType.DEL)
-    			this.setMessage(System.Label.fflib_security_error_object_not_deletable);
+    			this.setMessage(System.Label.BPG_security_error_object_not_deletable);
 
     		this.setMessage(
     			String.format(
@@ -83,11 +83,11 @@ public class fflib_SecurityUtils
     		this.m_objectType = objectType;
     		this.m_fieldToken = fieldToken;
     		if(operation == OperationType.CREATE)
-    			this.setMessage(System.Label.fflib_security_error_field_not_insertable);
+    			this.setMessage(System.Label.BPG_security_error_field_not_insertable);
     		else if(operation == OperationType.READ)
-    			this.setMessage(System.Label.fflib_security_error_field_not_readable);
+    			this.setMessage(System.Label.BPG_security_error_field_not_readable);
     		else if(operation == OperationType.MODIFY)
-    			this.setMessage(System.Label.fflib_security_error_field_not_updateable);
+    			this.setMessage(System.Label.BPG_security_error_field_not_updateable);
 
     		this.setMessage(
     			String.format(
@@ -207,7 +207,7 @@ public class fflib_SecurityUtils
     **/
     public static void checkFieldIsInsertable(SObjectType objType, String fieldName)
     {
-        checkFieldIsInsertable(objType, fflib_SObjectDescribe.getDescribe(objType).getField(fieldName));
+        checkFieldIsInsertable(objType, BPG_SObjectDescribe.getDescribe(objType).getField(fieldName));
     }
 
     /**
@@ -237,7 +237,7 @@ public class fflib_SecurityUtils
     **/
     public static void checkFieldIsReadable(SObjectType objType, String fieldName)
     {
-    	checkFieldIsReadable(objType, fflib_SObjectDescribe.getDescribe(objType).getField(fieldName));
+    	checkFieldIsReadable(objType, BPG_SObjectDescribe.getDescribe(objType).getField(fieldName));
     }
 
     /**
@@ -268,7 +268,7 @@ public class fflib_SecurityUtils
     **/    
     public static void checkFieldIsUpdateable(SObjectType objType, String fieldName)
     {
-        checkFieldIsUpdateable(objType, fflib_SObjectDescribe.getDescribe(objType).getField(fieldName));
+        checkFieldIsUpdateable(objType, BPG_SObjectDescribe.getDescribe(objType).getField(fieldName));
     }
 
     /**

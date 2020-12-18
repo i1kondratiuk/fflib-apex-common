@@ -25,14 +25,14 @@
 **/
 
 @IsTest
-private class fflib_ApplicationTest 
+private class BPG_ApplicationTest 
 {
 	@IsTest
 	private static void callingDomainFactoryShouldGiveRegisteredImplsAndMocks()
 	{
 		// Registered Accounts domain class by SObject List
-		Id testAccountId = fflib_IDGenerator.generate(Account.SObjectType);
-		fflib_ISObjectDomain domainObjectAcct = 
+		Id testAccountId = BPG_IDGenerator.generate(Account.SObjectType);
+		BPG_ISObjectDomain domainObjectAcct = 
 			Domain.newInstance(
 				new List<Account> 
 					{ new Account( 
@@ -42,7 +42,7 @@ private class fflib_ApplicationTest
 		System.assertEquals(testAccountId, domainObjectAcct.getRecords()[0].Id);
 
 		// Registered Accounts domain class by SObject List
-		testAccountId = fflib_IDGenerator.generate(Account.SObjectType);
+		testAccountId = BPG_IDGenerator.generate(Account.SObjectType);
 		domainObjectAcct = 
 			Domain.newInstance(
 				new List<SObject> 
@@ -54,8 +54,8 @@ private class fflib_ApplicationTest
 		System.assertEquals(testAccountId, domainObjectAcct.getRecords()[0].Id);		
 
 		// Registered Opportunities domain class by SObject List
-		Id testOpportunityId = fflib_IDGenerator.generate(Opportunity.SObjectType);
-		fflib_ISObjectDomain domainObjectOpp = 
+		Id testOpportunityId = BPG_IDGenerator.generate(Opportunity.SObjectType);
+		BPG_ISObjectDomain domainObjectOpp = 
 			Domain.newInstance(
 				new List<Opportunity> 
 					{ new Opportunity( 
@@ -66,7 +66,7 @@ private class fflib_ApplicationTest
 
 		// Test failure for creating new instance using IConstructable2
 		// for domain class that does not support it
-		testOpportunityId = fflib_IDGenerator.generate(Opportunity.SObjectType);
+		testOpportunityId = BPG_IDGenerator.generate(Opportunity.SObjectType);
 		domainObjectOpp = 
 			Domain.newInstance(
 				new List<SObject> 
@@ -78,9 +78,9 @@ private class fflib_ApplicationTest
 		System.assert(domainObjectOpp instanceof OpportuntiesDomain);
 
 		// Given
-		fflib_ApexMocks mocks = new fflib_ApexMocks();
+		BPG_ApexMocks mocks = new BPG_ApexMocks();
 		mocks.startStubbing();		
-		fflib_ISObjectDomain domainMock = new fflib_SObjectMocks.SObjectDomain(mocks);
+		BPG_ISObjectDomain domainMock = new BPG_SObjectMocks.SObjectDomain(mocks);
 		mocks.when(domainMock.sObjectType()).thenReturn(Account.SObjectType);
 		mocks.stopStubbing();		
 		Domain.setMock(domainMock);
@@ -94,7 +94,7 @@ private class fflib_ApplicationTest
 						Name = 'Test Account') });
 
 		// Then
-		System.assert(domainObjectAcct instanceof fflib_SObjectMocks.SObjectDomain);
+		System.assert(domainObjectAcct instanceof BPG_SObjectMocks.SObjectDomain);
 
 		// When
 		domainObjectAcct = 
@@ -106,17 +106,17 @@ private class fflib_ApplicationTest
 				, Account.SObjectType);
 
 		// Then
-		System.assert(domainObjectAcct instanceof fflib_SObjectMocks.SObjectDomain);		
+		System.assert(domainObjectAcct instanceof BPG_SObjectMocks.SObjectDomain);		
 	}
 
 	@IsTest
 	private static void callingDomainFactoryWithIdsShouldGiveRegisteredImpls()
 	{
 		// Given
-		fflib_ApexMocks mocks = new fflib_ApexMocks();
+		BPG_ApexMocks mocks = new BPG_ApexMocks();
 		mocks.startStubbing();
-		fflib_ISObjectSelector selectorMock = new fflib_SObjectMocks.SObjectSelector(mocks);
-		Id testAccountId = fflib_IDGenerator.generate(Account.SObjectType);
+		BPG_ISObjectSelector selectorMock = new BPG_SObjectMocks.SObjectSelector(mocks);
+		Id testAccountId = BPG_IDGenerator.generate(Account.SObjectType);
 		List<Account> accounts = 
 			new List<Account> 
 				{ new Account( 
@@ -129,7 +129,7 @@ private class fflib_ApplicationTest
 
 		// When
 		Selector.setMock(selectorMock);
-		fflib_ISObjectDomain domainObjectAcc = Domain.newInstance(new Set<Id> { testAccountId });
+		BPG_ISObjectDomain domainObjectAcc = Domain.newInstance(new Set<Id> { testAccountId });
 
 		// Then
 		List<Account> assertAccounts = (List<Account>) domainObjectAcc.getRecords();
@@ -146,7 +146,7 @@ private class fflib_ApplicationTest
 		try {
 			Domain.newInstance(new List<SObject>());
 			System.assert(false, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (BPG_Application.DeveloperException e) {
 			System.assertEquals('Unable to determine SObjectType', e.getMessage());
 		}
 	}
@@ -157,7 +157,7 @@ private class fflib_ApplicationTest
 		try {
 			Domain.newInstance(new List<SObject>(), null);
 			System.assert(false, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (BPG_Application.DeveloperException e) {
 			System.assertEquals('Must specify sObjectType', e.getMessage());
 		}
 	}	
@@ -168,14 +168,14 @@ private class fflib_ApplicationTest
 		try {
 			Domain.newInstance(new List<Product2>{ new Product2(Name = 'Test Product') });
 			System.assert(false, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (BPG_Application.DeveloperException e) {
 			System.assertEquals('Domain constructor class not found for SObjectType Product2', e.getMessage());
 		}
 
 		try {
 			Domain.newInstance(new List<SObject>{ new Product2(Name = 'Test Product') }, Product2.SObjectType);
 			System.assert(false, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (BPG_Application.DeveloperException e) {
 			System.assertEquals('Domain constructor class not found for SObjectType Product2', e.getMessage());
 		}		
 	}
@@ -187,7 +187,7 @@ private class fflib_ApplicationTest
 			Domain.newInstance(new List<Contact>{ new Contact(LastName = 'TestContactLName') });
 			System.assert(false, 'Expected exception');
 		} catch (System.TypeException e) {
-			System.assert(Pattern.Matches('Invalid conversion from runtime type \\w*\\.?fflib_ApplicationTest\\.ContactsConstructor to \\w*\\.?fflib_SObjectDomain\\.IConstructable',
+			System.assert(Pattern.Matches('Invalid conversion from runtime type \\w*\\.?BPG_ApplicationTest\\.ContactsConstructor to \\w*\\.?BPG_SObjectDomain\\.IConstructable',
 				e.getMessage()), 'Exception message did not match the expected pattern: ' + e.getMessage());
 		}	
 
@@ -195,7 +195,7 @@ private class fflib_ApplicationTest
 			Domain.newInstance(new List<SObject>{ new Contact(LastName = 'TestContactLName') }, Contact.SObjectType);
 			System.assert(false, 'Expected exception');
 		} catch (System.TypeException e) {
-			System.assert(Pattern.Matches('Invalid conversion from runtime type \\w*\\.?fflib_ApplicationTest\\.ContactsConstructor to \\w*\\.?fflib_SObjectDomain\\.IConstructable2',
+			System.assert(Pattern.Matches('Invalid conversion from runtime type \\w*\\.?BPG_ApplicationTest\\.ContactsConstructor to \\w*\\.?BPG_SObjectDomain\\.IConstructable2',
 				e.getMessage()), 'Exception message did not match the expected pattern: ' + e.getMessage());
 		}		
 	}	
@@ -204,11 +204,11 @@ private class fflib_ApplicationTest
 	private static void callingUnitOfWorkFactoryShouldGivenStandardImplsAndMockImpls()
 	{
 		// Standard behaviour
-		System.assert(UnitOfWork.newInstance() instanceof fflib_SObjectUnitOfWork);
+		System.assert(UnitOfWork.newInstance() instanceof BPG_SObjectUnitOfWork);
  		
 		// Mocking behaviour
-		UnitOfWork.setMock(new fflib_SObjectMocks.SObjectUnitOfWork(new fflib_ApexMocks()));
-		System.assert(UnitOfWork.newInstance() instanceof fflib_SObjectMocks.SObjectUnitOfWork);
+		UnitOfWork.setMock(new BPG_SObjectMocks.SObjectUnitOfWork(new BPG_ApexMocks()));
+		System.assert(UnitOfWork.newInstance() instanceof BPG_SObjectMocks.SObjectUnitOfWork);
 	}
 
 	@IsTest
@@ -218,14 +218,14 @@ private class fflib_ApplicationTest
 		System.assert(
 				UnitOfWork.newInstance(
 						new List<SObjectType>{ Account.SObjectType}
-				) instanceof fflib_SObjectUnitOfWork);
+				) instanceof BPG_SObjectUnitOfWork);
 
 		// Mocking behaviour
-		UnitOfWork.setMock(new fflib_SObjectMocks.SObjectUnitOfWork(new fflib_ApexMocks()));
+		UnitOfWork.setMock(new BPG_SObjectMocks.SObjectUnitOfWork(new BPG_ApexMocks()));
 		System.assert(
 				UnitOfWork.newInstance(
 						new List<SObjectType>{ Account.SObjectType}
-				) instanceof fflib_SObjectMocks.SObjectUnitOfWork);
+				) instanceof BPG_SObjectMocks.SObjectUnitOfWork);
 	}
 
 	@IsTest
@@ -237,7 +237,7 @@ private class fflib_ApplicationTest
 		try {
 			Service.newInstance(IContactService.class);
 			System.assert(false, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (BPG_Application.DeveloperException e) {
 			System.assertEquals('No implementation registered for service interface ' + IContactService.class.getName(), e.getMessage());
 		}
 
@@ -256,7 +256,7 @@ private class fflib_ApplicationTest
 		try {
 			Selector.newInstance(User.SObjectType);
 			System.assert(false, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (BPG_Application.DeveloperException e) {
 			System.assertEquals('Selector class not found for SObjectType User', e.getMessage());
 		}
 	}
@@ -267,13 +267,13 @@ private class fflib_ApplicationTest
 		try {
 			Selector.selectById(null);
 			System.assert(false, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (BPG_Application.DeveloperException e) {
 			System.assertEquals('Invalid record Id\'s set', e.getMessage());
 		}
 		try {
 			Selector.selectById(new Set<Id>());
 			System.assert(false, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (BPG_Application.DeveloperException e) {
 			System.assertEquals('Invalid record Id\'s set', e.getMessage());
 		}
 	}
@@ -284,10 +284,10 @@ private class fflib_ApplicationTest
 		try {
 			Selector.selectById(
 				new Set<Id> { 
-					fflib_IDGenerator.generate(Opportunity.SObjectType), 
-					fflib_IDGenerator.generate(Account.SObjectType) });
+					BPG_IDGenerator.generate(Opportunity.SObjectType), 
+					BPG_IDGenerator.generate(Account.SObjectType) });
 			System.assert(true, 'Expected exception');
-		} catch (fflib_Application.DeveloperException e) {
+		} catch (BPG_Application.DeveloperException e) {
 			System.assertEquals('Unable to determine SObjectType, Set contains Id\'s from different SObject types', e.getMessage());
 		}		
 	}
@@ -296,10 +296,10 @@ private class fflib_ApplicationTest
 	private static void callingSelectoryFactorySelectByIdShouldReturnResults()
 	{	
 		// Given
-		fflib_ApexMocks mocks = new fflib_ApexMocks();
+		BPG_ApexMocks mocks = new BPG_ApexMocks();
 		mocks.startStubbing();
-		fflib_ISObjectSelector selectorMock = new fflib_SObjectMocks.SObjectSelector(mocks);
-		Id testAccountId = fflib_IDGenerator.generate(Account.SObjectType);
+		BPG_ISObjectSelector selectorMock = new BPG_SObjectMocks.SObjectSelector(mocks);
+		Id testAccountId = BPG_IDGenerator.generate(Account.SObjectType);
 		List<Account> accounts = 
 			new List<Account> 
 				{ new Account( 
@@ -315,7 +315,7 @@ private class fflib_ApplicationTest
 		List<Account> assertAccounts = Selector.selectById(accountIds);
 
 		// Then
-		System.assert(Selector.newInstance(Account.SObjectType) instanceof fflib_SObjectMocks.SObjectSelector);
+		System.assert(Selector.newInstance(Account.SObjectType) instanceof BPG_SObjectMocks.SObjectSelector);
 		System.assertEquals(1, assertAccounts.size());
 		System.assertEquals(testAccountId, assertAccounts[0].Id);
 		System.assertEquals('Test Account', assertAccounts[0].Name);
@@ -327,11 +327,11 @@ private class fflib_ApplicationTest
 	private static void callingSelectoryFactorySselectByRelationshipPassRelatedIds()
 	{	
 		// Given
-		fflib_ApexMocks mocks = new fflib_ApexMocks();
+		BPG_ApexMocks mocks = new BPG_ApexMocks();
 		mocks.startStubbing();
-		fflib_ISObjectSelector selectorMock = new fflib_SObjectMocks.SObjectSelector(mocks);
-		Id testAccountId = fflib_IDGenerator.generate(Account.SObjectType);
-		Id testOpportunityId = fflib_IDGenerator.generate(Opportunity.SObjectType);
+		BPG_ISObjectSelector selectorMock = new BPG_SObjectMocks.SObjectSelector(mocks);
+		Id testAccountId = BPG_IDGenerator.generate(Account.SObjectType);
+		Id testOpportunityId = BPG_IDGenerator.generate(Opportunity.SObjectType);
 		List<Account> accounts = 
 			new List<Account> 
 				{ new Account( 
@@ -357,7 +357,7 @@ private class fflib_ApplicationTest
 		List<Account> assertAccounts = Selector.selectByRelationship(opportunties, Opportunity.AccountId);
 
 		// Then
-		System.assert(Selector.newInstance(Account.SObjectType) instanceof fflib_SObjectMocks.SObjectSelector);
+		System.assert(Selector.newInstance(Account.SObjectType) instanceof BPG_SObjectMocks.SObjectSelector);
 		System.assertEquals(1, assertAccounts.size());
 		System.assertEquals(testAccountId, assertAccounts[0].Id);
 		System.assertEquals('Test Account', assertAccounts[0].Name);
@@ -373,7 +373,7 @@ private class fflib_ApplicationTest
 		Account myAccount = new Account(Name = 'Test Account');
 
 		// When the unit of work is instantiated from the Application Class and the record is registered and commited
-		fflib_ISObjectUnitOfWork unitOfWork = UnitOfWork.newInstance(customDML);
+		BPG_ISObjectUnitOfWork unitOfWork = UnitOfWork.newInstance(customDML);
 		unitOfWork.registerNew(myAccount);
 		unitOfWork.commitWork();
 
@@ -389,8 +389,8 @@ private class fflib_ApplicationTest
 		Account myAccount = new Account(Name = 'Test Account');
 
 		// When the unit of work is instantiated from the Application Class and the record is registered and commited
-		UnitOfWork.setMock(new fflib_SObjectMocks.SObjectUnitOfWork(new fflib_ApexMocks()));
-		fflib_ISObjectUnitOfWork uow = UnitOfWork.newInstance(customDML);
+		UnitOfWork.setMock(new BPG_SObjectMocks.SObjectUnitOfWork(new BPG_ApexMocks()));
+		BPG_ISObjectUnitOfWork uow = UnitOfWork.newInstance(customDML);
 
 		uow.registerNew(myAccount);
 		uow.commitWork();
@@ -407,7 +407,7 @@ private class fflib_ApplicationTest
 		Account myAccount = new Account(Name = 'Test Account');
 
 		// When the unit of work is instantiated from the Application Class and the record is registered and commited
-		fflib_ISObjectUnitOfWork unitOfWork = UnitOfWork.newInstance(
+		BPG_ISObjectUnitOfWork unitOfWork = UnitOfWork.newInstance(
 				new List<SObjectType>{ Account.SObjectType },
 				customDML
 		);
@@ -426,8 +426,8 @@ private class fflib_ApplicationTest
 		Account myAccount = new Account(Name = 'Test Account');
 
 		// When the unit of work is instantiated from the Application Class and the record is registered and commited
-		UnitOfWork.setMock(new fflib_SObjectMocks.SObjectUnitOfWork(new fflib_ApexMocks()));
-		fflib_ISObjectUnitOfWork uow = UnitOfWork.newInstance(
+		UnitOfWork.setMock(new BPG_SObjectMocks.SObjectUnitOfWork(new BPG_ApexMocks()));
+		BPG_ISObjectUnitOfWork uow = UnitOfWork.newInstance(
 				new List<SObjectType>{ Account.SObjectType },
 				customDML
 		);
@@ -438,7 +438,7 @@ private class fflib_ApplicationTest
 		System.assert(!customDML.isInsertCalled, 'Oops, custom DML was called');
 	}
 
-	public class CustomDML implements fflib_SObjectUnitOfWork.IDML
+	public class CustomDML implements BPG_SObjectUnitOfWork.IDML
 	{
 		public boolean isInsertCalled = false;
 		public boolean isUpdateCalled = false;
@@ -466,37 +466,37 @@ private class fflib_ApplicationTest
 	}
 
 	// Configure and create the ServiceFactory for this Application
-	public static final fflib_Application.ServiceFactory Service = 
-		new fflib_Application.ServiceFactory( 
+	public static final BPG_Application.ServiceFactory Service = 
+		new BPG_Application.ServiceFactory( 
 			new Map<Type, Type> {
 					IOpportunitiesService.class => OpportunitiesServiceImpl.class,
 					IAccountService.class => AccountsServiceImpl.class });
 
 	// Configure and create the UnitOfWorkFactory for this Application
-	public static final fflib_Application.UnitOfWorkFactory UnitOfWork = 
-		new fflib_Application.UnitOfWorkFactory(
+	public static final BPG_Application.UnitOfWorkFactory UnitOfWork = 
+		new BPG_Application.UnitOfWorkFactory(
 				new List<SObjectType> { 
 					Account.SObjectType,
 					Opportunity.SObjectType,
 					OpportunityLineItem.SObjectType });	
 
 	// Configure and create the SelectorFactory for this Application
-	public static final fflib_Application.SelectorFactory Selector = 
-		new fflib_Application.SelectorFactory(
+	public static final BPG_Application.SelectorFactory Selector = 
+		new BPG_Application.SelectorFactory(
 			new Map<SObjectType, Type> {
 					Account.SObjectType => AccountsSelector.class,
 					Opportunity.SObjectType => OpportuntiesSelector.class });
 
 	// Configure and create the DomainFactory for this Application
-	public static final fflib_Application.DomainFactory Domain = 
-		new fflib_Application.DomainFactory(
-			fflib_ApplicationTest.Selector,
+	public static final BPG_Application.DomainFactory Domain = 
+		new BPG_Application.DomainFactory(
+			BPG_ApplicationTest.Selector,
 			new Map<SObjectType, Type> {
 					Account.SObjectType => AccountsConstructor.class,
 					Opportunity.SObjectType => OpportuntiesConstructor.class,
 					Contact.SObjectType => ContactsConstructor.class });
 
-	public class AccountsDomain extends fflib_SObjectDomain
+	public class AccountsDomain extends BPG_SObjectDomain
 	{
 		public AccountsDomain(List<Account> sObjectList)
 		{
@@ -509,20 +509,20 @@ private class fflib_ApplicationTest
 		}
 	}			
 
-	public class AccountsConstructor implements fflib_SObjectDomain.IConstructable2
+	public class AccountsConstructor implements BPG_SObjectDomain.IConstructable2
 	{
-		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		public BPG_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new AccountsDomain(sObjectList);
 		}
 
-		public fflib_SObjectDomain construct(List<SObject> sObjectList, SObjectType sObjectType)
+		public BPG_SObjectDomain construct(List<SObject> sObjectList, SObjectType sObjectType)
 		{
 			return new AccountsDomain(sObjectList, sObjectType);
 		}		
 	}	
 
-	public class OpportuntiesDomain extends fflib_SObjectDomain
+	public class OpportuntiesDomain extends BPG_SObjectDomain
 	{
 		public OpportuntiesDomain(List<Opportunity> sObjectList)
 		{
@@ -535,20 +535,20 @@ private class fflib_ApplicationTest
 		}		
 	}	
 
-	public class OpportuntiesConstructor implements fflib_SObjectDomain.IConstructable2
+	public class OpportuntiesConstructor implements BPG_SObjectDomain.IConstructable2
 	{
-		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		public BPG_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new OpportuntiesDomain(sObjectList);
 		}
 
-		public fflib_SObjectDomain construct(List<SObject> sObjectList, SObjectType sObjectType)
+		public BPG_SObjectDomain construct(List<SObject> sObjectList, SObjectType sObjectType)
 		{
 			return new OpportuntiesDomain(sObjectList, sObjectType);
 		}		
 	}
 
-	public class ContactsDomain extends fflib_SObjectDomain
+	public class ContactsDomain extends BPG_SObjectDomain
 	{
 		public ContactsDomain(List<Opportunity> sObjectList)
 		{
@@ -567,7 +567,7 @@ private class fflib_ApplicationTest
 
 	}		
 
-	class OpportuntiesSelector extends fflib_SObjectSelector
+	class OpportuntiesSelector extends BPG_SObjectSelector
 	{
 		public List<Schema.SObjectField> getSObjectFieldList()
 		{
@@ -583,7 +583,7 @@ private class fflib_ApplicationTest
 		}
 	}
 	
-	class AccountsSelector extends fflib_SObjectSelector
+	class AccountsSelector extends BPG_SObjectSelector
 	{
 		public List<Schema.SObjectField> getSObjectFieldList()
 		{

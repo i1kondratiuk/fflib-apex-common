@@ -25,9 +25,9 @@
 **/
 
 /**
- * @see fflib_SObjectUnitOfWork
+ * @see BPG_SObjectUnitOfWork
  **/
-public interface fflib_ISObjectUnitOfWork
+public interface BPG_ISObjectUnitOfWork
 {
     /**
      * Register a newly created SObject instance to be inserted when commitWork is called
@@ -219,7 +219,7 @@ public interface fflib_ISObjectUnitOfWork
      *
      * @param work Work to be registered
      **/
-    void registerWork(fflib_SObjectUnitOfWork.IDoWork work);
+    void registerWork(BPG_SObjectUnitOfWork.IDoWork work);
     /**
      * Registers the given email to be sent during the commitWork
      *

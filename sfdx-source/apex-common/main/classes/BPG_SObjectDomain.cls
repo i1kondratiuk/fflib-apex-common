@@ -38,8 +38,8 @@
  * http://martinfowler.com/eaaCatalog/domainModel.html
  *
  **/
-public virtual with sharing class fflib_SObjectDomain
-	implements fflib_ISObjectDomain
+public virtual with sharing class BPG_SObjectDomain
+	implements BPG_ISObjectDomain
 {
 	/**
 	 * Provides access to the data represented by this domain class
@@ -96,7 +96,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Retains instances of domain classes implementing trigger stateful
 	 **/
-	private static Map<Type, List<fflib_SObjectDomain>> TriggerStateByClass; 
+	private static Map<Type, List<BPG_SObjectDomain>> TriggerStateByClass; 
 	
 	/**
 	 * Retains the trigger tracking configuration used for each domain
@@ -109,7 +109,7 @@ public virtual with sharing class fflib_SObjectDomain
 		
 		Test = new TestFactory();
 		
-		TriggerStateByClass = new Map<Type, List<fflib_SObjectDomain>>();
+		TriggerStateByClass = new Map<Type, List<BPG_SObjectDomain>>();
 
 		TriggerEventByClass = new Map<Type, TriggerEvent>();
 	}
@@ -120,7 +120,7 @@ public virtual with sharing class fflib_SObjectDomain
 	 * @param sObjectList A concrete list (e.g. List<Account> vs List<SObject>) of records
 
 	 **/
-	public fflib_SObjectDomain(List<SObject> sObjectList)
+	public BPG_SObjectDomain(List<SObject> sObjectList)
 	{
 		this(sObjectList, sObjectList.getSObjectType());
 	}
@@ -134,7 +134,7 @@ public virtual with sharing class fflib_SObjectDomain
 	 * @remark Will support List<SObject> but all records in the list will be assumed to be of
 	 *         the type specified in sObjectType
 	 **/
-	public fflib_SObjectDomain(List<SObject> sObjectList, SObjectType sObjectType)
+	public BPG_SObjectDomain(List<SObject> sObjectList, SObjectType sObjectType)
 	{
 		// Ensure the domain class has its own copy of the data
 		Records = sObjectList.clone(); 
@@ -359,7 +359,7 @@ public virtual with sharing class fflib_SObjectDomain
 	 **/
 	public interface IConstructable
 	{
-		fflib_SObjectDomain construct(List<SObject> sObjectList);
+		BPG_SObjectDomain construct(List<SObject> sObjectList);
 	}
 
 	/**
@@ -367,7 +367,7 @@ public virtual with sharing class fflib_SObjectDomain
 	 **/
 	public interface IConstructable2 extends IConstructable
 	{
-		fflib_SObjectDomain construct(List<SObject> sObjectList, SObjectType sObjectType);
+		BPG_SObjectDomain construct(List<SObject> sObjectList, SObjectType sObjectType);
 	}	
 	
 	/**
@@ -377,9 +377,9 @@ public virtual with sharing class fflib_SObjectDomain
 	 *   the ITriggerStateful interface. Note this method is sensitive to recursion, meaning
 	 *   it will return the applicable domain instance for the level of recursion
 	 **/ 
-	public static fflib_SObjectDomain getTriggerInstance(Type domainClass)
+	public static BPG_SObjectDomain getTriggerInstance(Type domainClass)
 	{
-		List<fflib_SObjectDomain> domains = TriggerStateByClass.get(domainClass);
+		List<BPG_SObjectDomain> domains = TriggerStateByClass.get(domainClass);
 		if(domains==null || domains.size()==0)
 			return null;
 		return domains[domains.size()-1];
@@ -418,7 +418,7 @@ public virtual with sharing class fflib_SObjectDomain
 	private static void triggerHandler(Type domainClass, Boolean isBefore, Boolean isAfter, Boolean isInsert, Boolean isUpdate, Boolean isDelete, Boolean isUndelete, List<SObject> newRecords, Map<Id, SObject> oldRecordsMap)
 	{	
 		// After phase of trigger will reuse prior instance of domain class if ITriggerStateful implemented 
-		fflib_SObjectDomain domainObject = isBefore ? null : popTriggerInstance(domainClass, isDelete ? oldRecordsMap.values() : newRecords);
+		BPG_SObjectDomain domainObject = isBefore ? null : popTriggerInstance(domainClass, isDelete ? oldRecordsMap.values() : newRecords);
 		if(domainObject==null)
 		{		
 			// Construct the domain class constructor class
@@ -463,23 +463,23 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Pushes to the stack of domain classes per type a domain object instance
 	 **/
-	private static void pushTriggerInstance(Type domainClass, fflib_SObjectDomain domain)
+	private static void pushTriggerInstance(Type domainClass, BPG_SObjectDomain domain)
 	{
-		List<fflib_SObjectDomain> domains = TriggerStateByClass.get(domainClass);
+		List<BPG_SObjectDomain> domains = TriggerStateByClass.get(domainClass);
 		if(domains==null)
-			TriggerStateByClass.put(domainClass, domains = new List<fflib_SObjectDomain>());
+			TriggerStateByClass.put(domainClass, domains = new List<BPG_SObjectDomain>());
 		domains.add(domain);		
 	}
 	
 	/**
 	 * Pops from the stack of domain classes per type a domain object instance and updates the record set
 	 **/
-	private static fflib_SObjectDomain popTriggerInstance(Type domainClass, List<SObject> records)
+	private static BPG_SObjectDomain popTriggerInstance(Type domainClass, List<SObject> records)
 	{
-		List<fflib_SObjectDomain> domains = TriggerStateByClass.get(domainClass);
+		List<BPG_SObjectDomain> domains = TriggerStateByClass.get(domainClass);
 		if(domains==null || domains.size()==0)
 			return null;		
-		fflib_SObjectDomain domain = domains.remove(domains.size()-1);
+		BPG_SObjectDomain domain = domains.remove(domains.size()-1);
 		domain.Records = records;
 		return domain;
 	}
@@ -704,7 +704,7 @@ public virtual with sharing class fflib_SObjectDomain
 			return error(null, message, record);	
 		}
 
-		private String error(fflib_SObjectDomain domain, String message, SObject record)
+		private String error(BPG_SObjectDomain domain, String message, SObject record)
 		{
 			ObjectError objectError = new ObjectError();
 			objectError.domain = domain;
@@ -719,7 +719,7 @@ public virtual with sharing class fflib_SObjectDomain
 			return error(null, message, record, field);	
 		}
 
-		private String error(fflib_SObjectDomain domain, String message, SObject record, SObjectField field)
+		private String error(BPG_SObjectDomain domain, String message, SObject record, SObjectField field)
 		{
 			FieldError fieldError = new FieldError();
 			fieldError.domain = domain;
@@ -773,7 +773,7 @@ public virtual with sharing class fflib_SObjectDomain
 	public abstract class Error
 	{
 		public String message;
-		public fflib_SObjectDomain domain;
+		public BPG_SObjectDomain domain;
 	}
 
 	/**
@@ -861,7 +861,7 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
 	 **/
-	public with sharing class TestSObjectDomain extends fflib_SObjectDomain
+	public with sharing class TestSObjectDomain extends BPG_SObjectDomain
 	{
 		private String someState;
 		
@@ -882,7 +882,7 @@ public virtual with sharing class fflib_SObjectDomain
 			// Not required in production code
 			super.onApplyDefaults();
 			
-			// Apply defaults to Testfflib_SObjectDomain
+			// Apply defaults to TestBPG_SObjectDomain
 			for(Opportunity opportunity : (List<Opportunity>) Records)
 			{
 				opportunity.CloseDate = System.today().addDays(30);						
@@ -894,7 +894,7 @@ public virtual with sharing class fflib_SObjectDomain
 			// Not required in production code
 			super.onValidate();
 			
-			// Validate Testfflib_SObjectDomain
+			// Validate TestBPG_SObjectDomain
 			for(Opportunity opp : (List<Opportunity>) Records)
 			{
 				if(opp.Type!=null && opp.Type.startsWith('Existing') && opp.AccountId == null)
@@ -909,7 +909,7 @@ public virtual with sharing class fflib_SObjectDomain
 			// Not required in production code	
 			super.onValidate(existingRecords);
 			
-			// Validate changes to Testfflib_SObjectDomain
+			// Validate changes to TestBPG_SObjectDomain
 			for(Opportunity opp : (List<Opportunity>) Records)
 			{
 				Opportunity existingOpp = (Opportunity) existingRecords.get(opp.Id);
@@ -925,7 +925,7 @@ public virtual with sharing class fflib_SObjectDomain
 			// Not required in production code
 			super.onBeforeDelete();
 			
-			// Validate changes to Testfflib_SObjectDomain
+			// Validate changes to TestBPG_SObjectDomain
 			for(Opportunity opp : (List<Opportunity>) Records)
 			{
 				opp.addError( error('You cannot delete this Opportunity.', opp) );
@@ -954,9 +954,9 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
 	 **/	
-	public class TestSObjectDomainConstructor implements fflib_SObjectDomain.IConstructable
+	public class TestSObjectDomainConstructor implements BPG_SObjectDomain.IConstructable
 	{
-		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		public BPG_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new TestSObjectDomain(sObjectList);
 		}
@@ -966,7 +966,7 @@ public virtual with sharing class fflib_SObjectDomain
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
 	 **/
 	public with sharing class TestSObjectStatefulDomain 
-		extends fflib_SObjectDomain 
+		extends BPG_SObjectDomain 
 	{
 		public String someState;
 		
@@ -999,8 +999,8 @@ public virtual with sharing class fflib_SObjectDomain
 			if(newOpps.size()>0)
 			{
 				// This will force recursion and thus validate via the above assert results in a new domain instance
-				fflib_SObjectDomain.Test.Database.onInsert(newOpps);		
-				fflib_SObjectDomain.triggerHandler(fflib_SObjectDomain.TestSObjectStatefulDomainConstructor.class);
+				BPG_SObjectDomain.Test.Database.onInsert(newOpps);		
+				BPG_SObjectDomain.triggerHandler(BPG_SObjectDomain.TestSObjectStatefulDomainConstructor.class);
 			}								
 		}
 		
@@ -1016,9 +1016,9 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
 	 **/	
-	public class TestSObjectStatefulDomainConstructor implements fflib_SObjectDomain.IConstructable
+	public class TestSObjectStatefulDomainConstructor implements BPG_SObjectDomain.IConstructable
 	{
-		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		public BPG_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new TestSObjectStatefulDomain(sObjectList);
 		}				
@@ -1028,7 +1028,7 @@ public virtual with sharing class fflib_SObjectDomain
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
 	 **/
 	public with sharing class TestSObjectOnValidateBehaviour 
-		extends fflib_SObjectDomain 
+		extends BPG_SObjectDomain 
 	{
 		public TestSObjectOnValidateBehaviour(List<Opportunity> sObjectList)
 		{
@@ -1049,9 +1049,9 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
 	 **/	
-	public class TestSObjectOnValidateBehaviourConstructor implements fflib_SObjectDomain.IConstructable
+	public class TestSObjectOnValidateBehaviourConstructor implements BPG_SObjectDomain.IConstructable
 	{
-		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		public BPG_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new TestSObjectOnValidateBehaviour(sObjectList);
 		}				
@@ -1061,7 +1061,7 @@ public virtual with sharing class fflib_SObjectDomain
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
 	 **/
 	public with sharing class TestSObjectChangedRecords 
-		extends fflib_SObjectDomain 
+		extends BPG_SObjectDomain 
 	{
 		public TestSObjectChangedRecords(List<Opportunity> sObjectList)
 		{
@@ -1072,9 +1072,9 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
 	 **/	
-	public class TestSObjectChangedRecordsConstructor implements fflib_SObjectDomain.IConstructable
+	public class TestSObjectChangedRecordsConstructor implements BPG_SObjectDomain.IConstructable
 	{
-		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		public BPG_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new TestSObjectChangedRecords(sObjectList);
 		}				
@@ -1084,7 +1084,7 @@ public virtual with sharing class fflib_SObjectDomain
 	 * Test domain class (ideally this would be in the test class, however Type.newInstance does not see such classes)
 	 **/
 	public with sharing class TestSObjectDisableBehaviour 
-		extends fflib_SObjectDomain 
+		extends BPG_SObjectDomain 
 	{
 		public TestSObjectDisableBehaviour(List<Opportunity> sObjectList)
 		{
@@ -1130,9 +1130,9 @@ public virtual with sharing class fflib_SObjectDomain
 	/**
 	 * Typically an inner class to the domain class, supported here for test purposes
 	 **/    
-	public class TestSObjectDisableBehaviourConstructor implements fflib_SObjectDomain.IConstructable
+	public class TestSObjectDisableBehaviourConstructor implements BPG_SObjectDomain.IConstructable
 	{
-		public fflib_SObjectDomain construct(List<SObject> sObjectList)
+		public BPG_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new TestSObjectDisableBehaviour(sObjectList);
 		}

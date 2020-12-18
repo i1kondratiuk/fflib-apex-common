@@ -25,7 +25,7 @@
 **/
 
 /**
- * fflib_SObjectDescribe is a semi-intelligent wrapper for standard apex Schema methods.
+ * BPG_SObjectDescribe is a semi-intelligent wrapper for standard apex Schema methods.
  * It provides an internal caching layer, to avoid hitting describe limits from repeated use,
  * as well as wrapper classes and methods to make common tasks like working with relationship field name oddities
  * as well namespace handling.
@@ -36,7 +36,7 @@
  * This allows both upgrading old code to APIv29 by making use of these as a nearly drop in replacement, as well as keeping
  * namespace detection logic encapsulated.
 **/
-public class fflib_SObjectDescribe {
+public class BPG_SObjectDescribe {
 	//internal implementation details
 	private Schema.SObjectType token;
 	private Schema.SObjectField nameField;
@@ -74,7 +74,7 @@ public class fflib_SObjectDescribe {
 		set;
 	}
 
-	private fflib_SObjectDescribe(Schema.SObjectType token){	
+	private BPG_SObjectDescribe(Schema.SObjectType token){	
 		if(token == null)
 			throw new InvalidDescribeException('Invalid SObject type: null');
 		if(instanceCache.containsKey( String.valueOf(token) ))
@@ -85,7 +85,7 @@ public class fflib_SObjectDescribe {
 
 	//public instace methods
 	/**
-	 * Returns the Schema.SObjectType this fflib_SObjectDescribe instance is based on.
+	 * Returns the Schema.SObjectType this BPG_SObjectDescribe instance is based on.
 	**/
 	public Schema.SObjectType getSObjectType(){
 		return token;
@@ -131,7 +131,7 @@ public class fflib_SObjectDescribe {
 	}
 	
 	/**
-	 * Returns the raw Schema.DescribeSObjectResult an fflib_SObjectDescribe instance wraps.
+	 * Returns the raw Schema.DescribeSObjectResult an BPG_SObjectDescribe instance wraps.
 	**/
 	public Schema.DescribeSObjectResult getDescribe(){
 		return describe;
@@ -170,47 +170,47 @@ public class fflib_SObjectDescribe {
 		set;
 	}
 	/**
-	 * This is used to cache fflib_SObjectDescribe instances as they're constructed
+	 * This is used to cache BPG_SObjectDescribe instances as they're constructed
 	 * to prevent repeatedly re-constructing the same type.
 	 * These instances are not guaranteed to be, but typically will be, unique per sObject type due to the presence of flushCache.
 	**/
-	private static Map<String,fflib_SObjectDescribe> instanceCache {get{
+	private static Map<String,BPG_SObjectDescribe> instanceCache {get{
 			if(instanceCache == null)
-				instanceCache = new Map<String,fflib_SObjectDescribe>();
+				instanceCache = new Map<String,BPG_SObjectDescribe>();
 			return instanceCache;
 		} 
 		set;
 	}
-	public static fflib_SObjectDescribe getDescribe(String sObjectName){
+	public static BPG_SObjectDescribe getDescribe(String sObjectName){
 		if(String.isBlank(sObjectName))
 			return null;
-		fflib_SObjectDescribe result = instanceCache.get(sObjectName.toLowerCase());
+		BPG_SObjectDescribe result = instanceCache.get(sObjectName.toLowerCase());
 		if(result == null){
 			Schema.SObjectType token = wrappedGlobalDescribe.get(sObjectName.toLowerCase());
 			if(token == null)
 				result = null;
 			else
-				result = new fflib_SObjectDescribe(token);
+				result = new BPG_SObjectDescribe(token);
 		}
 		return result;
 	}
-	public static fflib_SObjectDescribe getDescribe(Schema.SObjectType token){
+	public static BPG_SObjectDescribe getDescribe(Schema.SObjectType token){
 		if(token == null)
 			return null;
-		fflib_SObjectDescribe result = instanceCache.get(String.valueOf(token).toLowerCase());
+		BPG_SObjectDescribe result = instanceCache.get(String.valueOf(token).toLowerCase());
 		if(result == null)
-			result = new fflib_SObjectDescribe(token);		
+			result = new BPG_SObjectDescribe(token);		
 		return result;
 	}
-	public static fflib_SObjectDescribe getDescribe(Schema.DescribeSObjectResult nativeDescribe){
+	public static BPG_SObjectDescribe getDescribe(Schema.DescribeSObjectResult nativeDescribe){
 		if(nativeDescribe == null)
 			return null;
-		fflib_SObjectDescribe result = instanceCache.get(nativeDescribe.getName().toLowerCase());
+		BPG_SObjectDescribe result = instanceCache.get(nativeDescribe.getName().toLowerCase());
 		if(result == null)
-			result = new fflib_SObjectDescribe(nativeDescribe.getSObjectType());
+			result = new BPG_SObjectDescribe(nativeDescribe.getSObjectType());
 		return result;
 	}
-	public static fflib_SObjectDescribe getDescribe(SObject instance){
+	public static BPG_SObjectDescribe getDescribe(SObject instance){
 		if(instance == null)
 			return null;
 		return getDescribe(instance.getSObjectType());
@@ -234,7 +234,7 @@ public class fflib_SObjectDescribe {
 	/**
 	 * This class handles emulating a Map<String,Object>'s non-mutating instance methods and helps navigate the complex topic of
 	 * handling implicit namespace behavior like pre-APIv29 did, while also allowing fully qualified references.
-	 * Note that this requires the API version of fflib_SObjectDescribe to be 29 or higher to function properly.
+	 * Note that this requires the API version of BPG_SObjectDescribe to be 29 or higher to function properly.
  	 *
 	 * Due to the lack of language support for covariant return types subclasses are responsible for implementing the get methods.
 	 * A minimal implementation of these would be a cast and returning getObject's result.
@@ -246,7 +246,7 @@ public class fflib_SObjectDescribe {
 
 		protected NamespacedAttributeMap(Map<String,Object> values){
 			//namespace detection courtesy http://salesforce.stackexchange.com/a/28977/60
-			currentNamespace = fflib_SObjectDescribe.class.getName().substringBefore('fflib_SObjectDescribe').removeEnd('.').toLowerCase();
+			currentNamespace = BPG_SObjectDescribe.class.getName().substringBefore('BPG_SObjectDescribe').removeEnd('.').toLowerCase();
 			this.values = values;
 		}
 		//A no-args constructor to allow subclasses with different constructor signatures
