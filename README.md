@@ -3,7 +3,7 @@ FFLib Apex Common
 
 [![Build Status](https://travis-ci.org/apex-enterprise-patterns/fflib-apex-common.svg)](https://travis-ci.org/apex-enterprise-patterns/fflib-apex-common) 
 
-**Dependencies:** Must deploy [ApexMocks](https://github.com/apex-enterprise-patterns/fflib-apex-mocks) before deploying this library
+**Dependencies:** Must deploy [ApexMocks](https://github.com/i1kondratiuk/fflib-apex-mocks) before deploying this library
 
 <a href="https://githubsfdeploy.herokuapp.com">
   <img alt="Deploy to Salesforce"
